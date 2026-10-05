@@ -1,0 +1,20 @@
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Dependencias / builds
+node_modules/
+dist/
+dist-ssr/
+target/
+*.log
+
+# Vite / tooling
+.vite/
+*.local
+
+# IDE
+.vscode/
+.idea/
+*.iml
+*.swp

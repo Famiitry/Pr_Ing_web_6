@@ -1,0 +1,77 @@
+# Stack completo de la Practica 2 - Ingenieria Web: base de datos, API de
+# autenticacion (Spring Boot) y frontend (Vite dev server), en un solo comando.
+#
+#   docker compose up --build
+#
+# Frontend:  http://localhost:5173
+# API:       http://localhost:8081/api/auth
+# PostgreSQL: localhost:5433 (puerto interno 5432)
+
+name: pr-ing-web-6
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: pr6-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: veterinaria_auth_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        ["CMD-SHELL", "pg_isready -U postgres -d veterinaria_auth_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+
+  auth-service:
+    build:
+      context: ./Practicas
+    container_name: pr6-auth-service
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    environment:
+      # Host `db` = nombre del servicio en la red de compose.
+      DB_URL: jdbc:postgresql://db:5432/veterinaria_auth_db
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      # Clave de desarrollo solamente. No usar en produccion ni exponerla.
+      JWT_SECRET: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+      JWT_EXPIRATION: 86400000
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    build:
+      context: ./Practica2IngWeb
+    container_name: pr6-web
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    environment:
+      # Destino del proxy /api de Vite -> red de compose, no localhost.
+      # Sin prefijo VITE_: asi Vite no lo mete en el bundle del navegador.
+      PROXY_TARGET: http://auth-service:8081
+      # Los bind mounts desde macOS no generan eventos de archivo en Linux:
+      # sin polling el HMR se queda congelado.
+      USE_POLLING: "true"
+    volumes:
+      # Codigo montado en vivo (HMR).
+      - ./Practica2IngWeb:/app
+      # node_modules propio del contenedor: los binarios nativos (rollup/esbuild)
+      # del host son de otra plataforma y no sirven dentro de Linux.
+      - web_node_modules:/app/node_modules
+    depends_on:
+      - auth-service
+
+volumes:
+  postgres_data:
+  web_node_modules:
