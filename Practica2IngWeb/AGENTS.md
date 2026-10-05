@@ -58,6 +58,9 @@ Dentro de Docker los comandos son los mismos, pero el contenedor ya corre
 
 ## Convenciones
 
+- **Existe un sistema de diseño**: `DESIGN.md` (SHINRYŪ-KAI). Tokens, gamut,
+  componentes y copy están especificados ahí — léelo antes de escribir JSX o
+  CSS nuevo, y no inventes colores/ radios nuevos fuera de sus tokens.
 - ESLint aplica `js.configs.recommended` + `react-hooks` + `react-refresh/vite`
   sólo a `**/*.{js,jsx}`. Sin reglas de estilo ni Prettier: el formateo no se
   verifica y los archivos son inconsistentes (`src/App.jsx` sin punto y coma,

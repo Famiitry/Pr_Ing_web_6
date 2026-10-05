@@ -18,4 +18,12 @@ export default defineConfig([
       parserOptions: { ecmaFeatures: { jsx: true } },
     },
   },
+  {
+    // Los archivos de configuracion se ejecutan en Node, no en el browser:
+    // vite.config.js lee process.env (PROXY_TARGET, USE_POLLING).
+    files: ['*.config.js', '*.config.cjs'],
+    languageOptions: {
+      globals: globals.node,
+    },
+  },
 ])
