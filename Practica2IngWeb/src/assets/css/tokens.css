@@ -1,0 +1,127 @@
+/* =============================================================================
+   SHINRYU-KAI (診療会) — tokens
+   Fuente de verdad unica del color, el tipo, la forma y el layout.
+   Light-first: el modo claro (washi) es el DEFAULT. Tinta es opt-in.
+   No anadas colores aqui. Ni radios, ni sombras, ni ningun valor.
+   Referencia y reglas: DESIGN.md
+   ========================================================================== */
+
+:root {
+  /* --- superficies -------------------------------------------------------- */
+  --sk-paper: #faf8f3; /* fondo de pagina — 生成, papel crudo */
+  --sk-panel: #ffffff; /* tarjetas, paneles */
+  --sk-shade: #f1eee6; /* filas alternas, zonas hunden */
+  --sk-ink: #17150f; /* superficie oscura puntual: nav, footer */
+
+  /* --- texto -------------------------------------------------------------- */
+  --sk-text: #17150f; /* 17.20 sobre paper */
+  --sk-text-2: #4a443a; /*  9.08 sobre paper */
+  --sk-text-3: #6e675a; /*  5.28 sobre paper */
+  --sk-text-inv: #faf8f3; /* texto sobre --sk-ink */
+
+  /* --- bordes ------------------------------------------------------------- */
+  --sk-hair: #e4dfd2; /* decorativo (1.33). NO marca controles */
+  --sk-edge: #8c8578; /* con significado (3.66 sobre panel) */
+
+  /* --- 朱 vermellón: lo unico que se permite ser saturated ----------------- */
+  --sk-shu: #b3272e; /* acciones, error */
+  --sk-shu-hover: #8e1d23; /*  8.94 sobre panel */
+  --sk-shu-soft: #f6dcda; /* fondo de alerta/aviso */
+  --sk-on-shu: #ffffff; /* texto sobre vermellon (6.47) — NUNCA invierte */
+
+  /* --- 金 oro: filete y sello. Casi nunca texto. ------------------------- */
+  --sk-kin: #a8821c; /* filete 1px (3.57 sobre panel) */
+  --sk-kin-text: #6f5714; /* oro legible como texto (5.69 sobre kin-soft) */
+  --sk-kin-soft: #f3e9cc; /* fondo de sello/destacado */
+
+  /* --- apoyos ------------------------------------------------------------- */
+  --sk-ai: #245c86; /* enlaces, informativo (7.12) */
+  --sk-moegi: #4a6321; /* exito / animal sano (5.72 sobre moegi-soft) */
+  --sk-moegi-soft: #e7efd5;
+
+  /* --- tipografia --------------------------------------------------------- */
+  --sk-font-display: 'Anton', 'Arial Black', 'Helvetica Neue', sans-serif;
+  --sk-font-body: 'Inter', system-ui, -apple-system, sans-serif;
+  --sk-font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', monospace;
+  --sk-font-jp: 'Shippori Mincho', 'Noto Serif JP', serif;
+
+  /* --- espacio (escala 4) ------------------------------------------------- */
+  --sk-s1: 4px;
+  --sk-s2: 8px;
+  --sk-s3: 12px;
+  --sk-s4: 16px;
+  --sk-s6: 24px;
+  --sk-s8: 32px;
+  --sk-s12: 48px;
+  --sk-s16: 64px;
+
+  /* --- forma -------------------------------------------------------------- */
+  --sk-radius: 0;
+  --sk-radius-seal: 999px;
+  --sk-blade: polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%);
+  --sk-hairline: 1px solid var(--sk-hair);
+  --sk-foil: linear-gradient(90deg, #a8821c, #d9bd6a 40%, #a8821c);
+
+  /* --- layout desktop-first (§5.1) ---------------------------------------- */
+  --sk-shell-max: 1120px;
+  --sk-navrail-w: 232px;
+  --sk-rail-w: 320px;
+  --sk-topbar-h: 48px;
+  --sk-form-w: 440px;
+  --sk-reading: 68ch; /* ancho de columna de texto corrido */
+
+  /* --- estado / foco / movimiento ----------------------------------------- */
+  --sk-focus: 0 0 0 2px var(--sk-paper), 0 0 0 4px var(--sk-kin-text);
+  --sk-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --sk-dur: 160ms;
+}
+
+/* El shell crece hacia arriba. Nunca max-width para diseno. */
+@media (min-width: 1440px) {
+  :root {
+    --sk-shell-max: 1280px;
+  }
+}
+@media (min-width: 1680px) {
+  :root {
+    --sk-shell-max: 1440px;
+  }
+}
+@media (min-width: 2200px) {
+  :root {
+    --sk-shell-max: 1600px;
+  }
+}
+
+/* Modo tinta: opt-in, nunca por preferencia del sistema. Una clinica se usa
+   con luz de dia; el tema oscuro es una preferencia de quien mira, no un
+   default que se imponga. */
+[data-theme='tinta'] {
+  --sk-paper: #0a0a0b;
+  --sk-panel: #131316;
+  --sk-shade: #1c1c21;
+  --sk-ink: #f4f1ea;
+
+  --sk-text: #f4f1ea; /* 17.54 sobre paper */
+  --sk-text-2: #b9b3a6; /*  8.88 sobre panel */
+  --sk-text-3: #837c6e; /*  4.78 sobre panel */
+  --sk-text-inv: #0a0a0b;
+
+  --sk-hair: #2a2a31;
+  --sk-edge: #6a6a75;
+
+  --sk-shu: #c1272d;
+  --sk-shu-hover: #a81f24;
+  --sk-shu-soft: #3a0e10;
+  --sk-on-shu: #f4f1ea; /* 5.18 — por eso el token no invierte */
+
+  --sk-kin: #c9a227;
+  --sk-kin-text: #e8cc6b; /* 12.52 sobre paper */
+  --sk-kin-soft: #241d0d;
+
+  --sk-ai: #7fa8d6; /* 7.99 */
+  --sk-moegi: #a8c25a;
+  --sk-moegi-soft: #1e2a10;
+
+  --sk-focus: 0 0 0 2px var(--sk-paper), 0 0 0 4px var(--sk-kin-text);
+}

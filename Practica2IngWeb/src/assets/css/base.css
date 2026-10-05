@@ -1,0 +1,321 @@
+/* =============================================================================
+   SHINRYU-KAI (診療会) — esqueleto base
+   Reset, tipografia y las primitivas minimas. Todo lo que ya funciona y que
+   solo hay que componer. Las piezas especificadas en DESIGN.md §6 que aun no
+   existen se marcan con "TODO §6.x" para que se COMPLETEN, no se inventen.
+   ========================================================================== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--sk-paper);
+  color: var(--sk-text);
+  font-family: var(--sk-font-body);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+input,
+button,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+/* --- tipografia ----------------------------------------------------------- */
+
+h1,
+h2,
+h3 {
+  font-family: var(--sk-font-display);
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  color: var(--sk-text);
+}
+
+h1 {
+  font-size: clamp(2rem, 3.4vw, 2.75rem);
+}
+h2 {
+  font-size: 1.5rem;
+}
+h3 {
+  font-size: 1.125rem;
+}
+
+/* Label / eyebrow: micro, en mayusculas, tracking amplio. Es el unico lugar
+   donde se usa el cuerpo pequeño — en mayusculas, nunca en parrafo. */
+.sk-label {
+  display: block;
+  font-family: var(--sk-font-body);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--sk-text-3);
+}
+
+.sk-jp {
+  font-family: var(--sk-font-jp);
+}
+
+.sk-mono {
+  font-family: var(--sk-font-mono);
+}
+
+/* Texto corrido: ancho de lectura, no de pantalla. */
+.sk-prose {
+  max-width: var(--sk-reading);
+  line-height: 1.65;
+  color: var(--sk-text-2);
+}
+
+/* --- foco ----------------------------------------------------------------- */
+
+:focus-visible {
+  outline: none;
+  box-shadow: var(--sk-focus);
+}
+
+/* --- layout --------------------------------------------------------------- */
+
+.sk-shell {
+  min-height: 100vh;
+  background: var(--sk-paper);
+}
+
+.sk-container {
+  width: 100%;
+  max-width: var(--sk-shell-max);
+  margin-inline: auto;
+  padding-inline: clamp(24px, 3vw, 56px);
+}
+
+.sk-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sk-s4);
+}
+
+.sk-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sk-s3);
+}
+
+.sk-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: var(--sk-s4);
+}
+
+/* --- Panel ---------------------------------------------------------------- */
+
+.sk-panel {
+  background: var(--sk-panel);
+  border: var(--sk-hairline);
+  border-radius: var(--sk-radius);
+  padding: var(--sk-s6);
+}
+
+/* Una sola vez por pantalla: la confirmacion de exito. */
+.sk-panel--sealed {
+  border-top: 2px solid var(--sk-foil);
+}
+
+/* --- Field ---------------------------------------------------------------- */
+
+.sk-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sk-s2);
+}
+
+.sk-field__input {
+  height: 44px;
+  padding-inline: var(--sk-s3);
+  background: var(--sk-panel);
+  border: 1px solid var(--sk-edge);
+  border-radius: var(--sk-radius);
+}
+
+.sk-field__input::placeholder {
+  color: var(--sk-text-3);
+}
+
+.sk-field--invalid .sk-field__input {
+  border-color: var(--sk-shu);
+}
+
+.sk-field__error {
+  display: flex;
+  align-items: center;
+  gap: var(--sk-s2);
+  font-size: 0.875rem;
+  color: var(--sk-shu-hover);
+}
+
+/* --- Button --------------------------------------------------------------- */
+
+.sk-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sk-s2);
+  height: 44px;
+  padding-inline: var(--sk-s6);
+  border-radius: var(--sk-radius);
+  cursor: pointer;
+  transition: background var(--sk-dur) var(--sk-ease),
+    color var(--sk-dur) var(--sk-ease);
+}
+
+.sk-btn--primary {
+  background: var(--sk-shu);
+  color: var(--sk-on-shu);
+  border: 1px solid var(--sk-shu);
+  clip-path: var(--sk-blade);
+}
+
+.sk-btn--primary:hover {
+  background: var(--sk-shu-hover);
+  border-color: var(--sk-shu-hover);
+}
+
+.sk-btn--ghost {
+  background: transparent;
+  color: var(--sk-text);
+  border: 1px solid var(--sk-edge);
+}
+
+.sk-btn[disabled] {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+/* La unica prolongacion de 12px es la cuchilla: no la uses en ningun otro
+   lado del layout. */
+.sk-btn--primary:disabled {
+  clip-path: none;
+}
+
+/* --- Alert (TODO §6.4: falta la matriz status -> copy) -------------------- */
+
+.sk-alert {
+  display: grid;
+  grid-template-columns: 24px 1fr;
+  gap: var(--sk-s3);
+  padding: var(--sk-s4);
+  background: var(--sk-shade);
+  border-left: 2px solid var(--sk-edge);
+}
+
+.sk-alert--error {
+  background: var(--sk-shu-soft);
+  border-left-color: var(--sk-shu);
+}
+
+.sk-alert--ok {
+  background: var(--sk-moegi-soft);
+  border-left-color: var(--sk-moegi);
+}
+
+.sk-alert__title {
+  font-family: var(--sk-font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.sk-alert__body {
+  font-size: 0.9375rem;
+  color: var(--sk-text-2);
+}
+
+/* --- TokenStrip (TODO §6.5) ----------------------------------------------- */
+
+.sk-token {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sk-s2);
+  padding: var(--sk-s3);
+  background: var(--sk-shade);
+  border-left: 2px solid var(--sk-kin);
+  font-family: var(--sk-font-mono);
+  font-size: 0.75rem;
+  word-break: break-all;
+  color: var(--sk-text-2);
+}
+
+/* --- sello de rol (TODO §6.1) --------------------------------------------- */
+
+.sk-seal {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--sk-radius-seal);
+  font-family: var(--sk-font-jp);
+  font-size: 0.875rem;
+  background: var(--sk-kin-soft);
+  color: var(--sk-kin-text);
+}
+
+/* --- gate de escritorio (TODO §5.5) --------------------------------------- */
+
+.sk-gate {
+  display: none;
+  min-height: 100vh;
+  place-items: center;
+  padding: var(--sk-s8);
+  text-align: center;
+}
+
+.sk-gate__inner {
+  max-width: 420px;
+  display: grid;
+  gap: var(--sk-s4);
+  justify-items: center;
+}
+
+/* Sin diseno movil. Por debajo de 1024px se declara el rango en vez de
+   romper el layout. §5.5 */
+@media (max-width: 1023px) {
+  .sk-shell {
+    display: none;
+  }
+  .sk-gate {
+    display: grid;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition-duration: 1ms !important;
+  }
+}

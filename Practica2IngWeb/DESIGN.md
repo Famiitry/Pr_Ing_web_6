@@ -53,6 +53,60 @@ POST /api/auth/login      → 200  {token, tokenType:"Bearer", id, nombre, email
 default `CLIENTE`).
 `Role`: `CLIENTE`, `VETERINARIO`, `ADMIN`.
 
+### 2.1 Cobertura: cada endpoint tiene que quedar servido
+
+Un endpoint sin pantalla es un endpoint que no existe para el usuario. Esta
+tabla es la lista de verificación del sistema: si una fila no tiene pantalla
+diseñada, el sistema está incompleto.
+
+| # | Endpoint | Pantalla | Estados que hay que diseñar | Notas |
+| --- | --- | --- | --- | --- |
+| E1 | `POST /api/auth/register` | `RegisterScreen` | vacío · foco · error de campo · cargando · 201 · 400 · red | 6 campos + selector de rol opcional |
+| E2 | `POST /api/auth/login` | `LoginScreen` | vacío · foco · error de campo · cargando · 200 · 403 · red | 2 campos, el 403 **no** es 401 |
+| E3 | sesión (JWT en memoria, sin endpoint) | `AuthedShell` | cargando sesión · autenticado · expirado | el `role` sale del `AuthResponse` |
+| E4 | rutas protegidas (aún no existen) | `AuthedShell` + `Panel` | 403 sin token → fuera | Ver §2.4 |
+
+`RegisterScreen` y `LoginScreen` comparten un `AuthLayout`: panel de marca a la
+izquierda (kanji vertical, textura asanoha), formulario a la derecha, ancho
+total `min(1120px, 92vw)`. El enlace entre ambas va en el pie del formulario,
+nunca en un navbar: en un formulario de un solo propósito, la navegación compite
+con el CTA.
+
+### 2.2 Tres superficies autenticadas, no una
+
+El `AuthResponse` trae `role`, así que el sistema tiene que comportarse distinto
+según él. No es decoración: es lo que la API permite hacer hoy.
+
+| Role | Kanji | Navegación del shell | Panel inicial |
+| --- | --- | --- | --- |
+| `CLIENTE` | 客 | Panel · Mis datos · Citas | Datos de la cuenta + `TokenStrip` |
+| `VETERINARIO` | 獣 | Panel · Agenda · Pacientes · Mis datos | Agenda del día |
+| `ADMIN` | 総 | Panel · Usuarios · Configuración · Mis datos | Métricas del sistema |
+
+Todos los roles ven «Mis datos». La diferencia es **cuántos items de navegación
+y qué panel abre**, no un layout distinto: el shell es el mismo y se le pasa el
+rol. Es la única forma de que añadir un rol después no rompa nada.
+
+### 2.3 Estados que ninguna pantalla puede saltarse
+
+Cada pantalla con datos pasa por los cinco, siempre:
+
+`vacío` → `cargando` → `con datos` → `error` → `reintentar`
+
+`error` y `reintento` no son opcionales. La API puede caerse (ver §2.4), y una
+pantalla que sólo sabe mostrar datos es una pantalla rota.
+
+### 2.4 Lo que el backend todavía no sirve (y el diseño debe tolerar)
+
+- **No hay filtro JWT.** `SecurityConfig` no registra ningún filtro con
+  `JwtService`, así que `anyRequest().authenticated()` rechaza el token. Hoy
+  no hay rutas protegidas y nada se nota; en cuanto haya una, el `AuthedShell`
+  tiene que reaccionar a ese 403 y **expulsar a `LoginScreen`**, no mostrar un
+  error.
+- **No hay endpoint de «yo».** El perfil sale del `AuthResponse` del login y
+  vive en memoria: recargar la página pierde la sesión. El diseño asume sesión
+  en memoria; no se dibuja un «estado de carga de perfil» que no existe.
+
 ### La restricción que define todo el sistema
 
 **La API no devuelve mensajes ni errores por campo.** El body de error es
@@ -87,56 +141,60 @@ código:
 
 ## 3. Color (chroma)
 
-La firma es **tinta + vermellón + oro**. Todo lo demás son apoyos.
+**Default: modo claro «washi».** El modo oscuro «tinta» es opt-in vía
+`[data-theme='tinta']`. Una gestión veterinaria se usa en salas luminosas
+todo el día; un fondo negro cansa y dificulta juzgar color en fotos de
+piel/pelo. La estética yakuza queda como *artesanía*: el sello 落款, el filete
+de oro, la cuchilla en el botón primario — no como oscuridad.
 
-### Tokens — modo oscuro (default, «tinta»)
+La paleta es deliberadamente restrictiva: **un acento saturado (朱 vermellón),
+un metal (金 oro) sólo como filete/sello, y verdes/índigos clínicos**.
+Todo lo demás es neutro.
+
+### Tokens — modo claro default (washi)
 
 | Token | Hex | Uso |
 | --- | --- | --- |
-| `--sk-ink` | `#0A0A0B` | Fondo de página |
-| `--sk-sumigata` | `#131316` | Panel, tarjeta, superficie |
-| `--sk-iro` | `#1C1C21` | Input, campo elevado |
-| `--sk-edge` | `#2A2A31` | Borde **decorativo** |
-| `--sk-edge-strong` | `#6A6A75` | Borde con significado, ≥3:1 |
-| `--sk-shu` | `#C1272D` | Acción primaria, acento de marca |
-| `--sk-shu-hover` | `#A81F24` | Primary hover |
-| `--sk-shu-active` | `#8A1A1E` | Primary pressed |
-| `--sk-on-shu` | `#F4F1EA` | Texto **sobre** vermellón. No invierte en modo claro |
-| `--sk-aka` | `#FF6B5A` | **Texto** de error/urgente (el rojo puro no llega a 4.5) |
-| `--sk-aka-bg` | `#3A0E10` | Fondo de alerta |
-| `--sk-kin` | `#C9A227` | Acento dorado, foil |
-| `--sk-kin-bright` | `#E8CC6B` | Texto dorado, anillo de foco en oscuro |
-| `--sk-kin-deep` | `#8A6D1F` | Oro en borde/filete **nunca** como texto en oscuro |
-| `--sk-ai` | `#7FA8D6` | Texto informativo (aizome, índigo diluido) |
-| `--sk-mochi` | `#B9B3A6` | Texto secundario |
-| `--sk-kusu` | `#837C6E` | Texto muted (4.78 — sólo cuerpo grande o labels) |
-| `--sk-moegi` | `#A8C25A` | Texto de éxito (herbal) |
-| `--sk-moegi-bg` | `#1E2A10` | Fondo de éxito |
-| `--sk-washi` | `#F4F1EA` | Texto principal |
+| `--sk-paper` | `#FAF8F3` | Fondo de página — 生成, papel crudo |
+| `--sk-panel` | `#FFFFFF` | Tarjetas, paneles |
+| `--sk-shade` | `#F1EEE6` | Filas alternas, zonas hundidas |
+| `--sk-ink` | `#17150F` | Superficie oscura puntual (nav, footer) |
+| `--sk-text` | `#17150F` | Texto principal (17.20 sobre paper) |
+| `--sk-text-2` | `#4A443A` | Texto secundario (9.08) |
+| `--sk-text-3` | `#6E675A` | Texto muted (5.28 — solo cuerpo grande/labels) |
+| `--sk-text-inv` | `#FAF8F3` | Texto sobre --sk-ink |
+| `--sk-hair` | `#E4DFD2` | Decorativo (1.33 — **no** marca controles) |
+| `--sk-edge` | `#8C8578` | Con significado (3.66 sobre panel) |
+| `--sk-shu` | `#B3272E` | **Único acento saturado**: acción primaria, error |
+| `--sk-shu-hover` | `#8E1D23` | Primary hover (8.94 sobre panel) |
+| `--sk-shu-soft` | `#F6DCDA` | Fondo de alerta/aviso |
+| `--sk-on-shu` | `#FFFFFF` | Texto **sobre vermellón** (6.47) — **nunca invierte** |
+| `--sk-kin` | `#A8821C` | Filete 1px (3.57 sobre panel) / sello |
+| `--sk-kin-text` | `#6F5714` | Oro legible como texto (5.69 sobre kin-soft) |
+| `--sk-kin-soft` | `#F3E9CC` | Fondo de sello / destacado |
+| `--sk-ai` | `#245C86` | Enlaces, informativo (7.12) |
+| `--sk-moegi` | `#4A6321` | Éxito / animal sano (5.72 sobre moegi-soft) |
+| `--sk-moegi-soft` | `#E7EFD5` | Fondo de éxito |
 
-### Tokens — modo claro («washi»)
+### Tokens — modo oscuro opt-in (tinta)
 
 | Token | Hex | Nota |
 | --- | --- | --- |
-| `--sk-ink` | `#EDE7DA` | Fondo (papel 生成) |
-| `--sk-sumigata` | `#F7F4ED` | Panel (胡粉) |
-| `--sk-iro` | `#FFFFFF` | Input |
-| `--sk-washi` | `#14100C` | Texto principal (15.37 sobre papel) |
-| `--sk-mochi` | `#4A443A` | Secundario (8.77 sobre panel) |
-| `--sk-kusu` | `#6E675A` | Muted (4.54) |
-| `--sk-edge` | `#D8D0BE` | Decorativo (1.25) |
-| `--sk-edge-strong` | `#7A7263` | Con significado (3.86) |
-| `--sk-shu` | `#9E1F24` | Acción primaria, más apagada que en oscuro |
-| `--sk-on-shu` | `#F4F1EA` | Texto sobre vermellón (6.96) |
-| `--sk-aka` / `--sk-aka-bg` | `#9E1F24` / `#F7DEDC` | Error (6.14) |
-| `--sk-ai` | `#2A5A8A` | Texto informativo (6.53) |
-| `--sk-moegi` / `--sk-moegi-bg` | `#4A6321` / `#E4ECD0` | Éxito (5.55) |
-| `--sk-kin-text` | `#6F5714` | **Oro como texto**: `#8A6D1F` da 3.97 y falla |
-| anillo de foco | `#6F5714` | `#E8CC6B` da 1.28 sobre papel: no sirve |
-
-Los tokens de modo claro **sobrescriben los mismos nombres** (`--sk-ink`,
-`--sk-washi`, `--sk-shu`…) en `[data-theme='washi']`, no crean sufijos `-inv`.
-Un componente no sabe en qué modo está: hereda.
+| `--sk-paper` | `#0A0A0B` | Fondo (solo si usuario fuerza tema) |
+| `--sk-panel` | `#131316` | Panel |
+| `--sk-shade` | `#1C1C21` | Superficie hundida |
+| `--sk-ink` | `#F4F1EA` | Texto principal (17.54) |
+| `--sk-text` | `#F4F1EA` | Texto principal |
+| `--sk-text-2` | `#B9B3A6` | Secundario (8.88) |
+| `--sk-text-3` | `#837C6E` | Muted (4.78) |
+| `--sk-hair` | `#2A2A31` | Decorativo |
+| `--sk-edge` | `#6A6A75` | Con significado |
+| `--sk-shu` | `#C1272D` | Vermellón (más vivo en oscuro) |
+| `--sk-on-shu` | `#F4F1EA` | **Mismo token** — no invierte |
+| `--sk-kin` | `#C9A227` | Oro vivo |
+| `--sk-kin-text` | `#E8CC6B` | 12.52 sobre paper |
+| `--sk-ai` | `#7FA8D6` | 7.99 |
+| `--sk-moegi` | `#A8C25A` | 9.92 |
 
 ### Contrato de contraste (medido, no estimado)
 
@@ -144,34 +202,40 @@ Todas las cifras salen de la fórmula WCAG 2.1, verificadas con script.
 
 | Par | Ratio | Veredicto |
 | --- | --- | --- |
-| `--sk-washi` sobre `--sk-ink` | 17.54 | AAA |
-| `--sk-kin-bright` sobre `--sk-ink` | 12.52 | AAA |
-| `--sk-kin` sobre `--sk-ink` | 8.18 | AAA |
-| `--sk-ai` sobre `--sk-ink` | 7.99 | AAA |
-| `--sk-mochi` sobre `--sk-sumigata` | 8.88 | AAA |
-| `--sk-aka` sobre `--sk-aka-bg` | 8.21 | AAA |
-| `--sk-on-shu` sobre `--sk-shu` | 5.18 | AA — **el botón primario lleva texto claro** |
-| `--sk-kusu` sobre `--sk-ink` | 4.78 | AA, justo |
-| `--sk-shu` (washi) sobre `--sk-ink` (washi) | 4.74 | AA |
-| `--sk-kin-text` sobre papel | 5.59 | AA |
-| `--sk-kin-deep` sobre `--sk-ink` | 4.04 | **FALLA** → sólo decorativo |
-| texto oscuro `#14100C` sobre `--sk-shu` (washi) | 2.41 | **FALLA** → de ahí el token `--sk-on-shu` |
-| texto oscuro `#14100C` sobre `--sk-shu` (oscuro) | 3.24 | **FALLA** → nunca texto oscuro en vermellón |
-| `--sk-ai` oscuro `#2E5C8A` | 2.84 | **FALLA** → usar `--sk-ai` claro |
-| `--sk-edge` sobre `--sk-ink` | 1.39 | Decorativo; para borde real, `--sk-edge-strong` |
+| `--sk-text` sobre `--sk-paper` | 17.20 | AAA |
+| `--sk-text-2` sobre `--sk-paper` | 9.08 | AAA |
+| `--sk-text-3` sobre `--sk-paper` | 5.28 | AA |
+| `--sk-shu` sobre `--sk-paper` | 6.09 | AA (texto de error) |
+| `--sk-on-shu` sobre `--sk-shu` | 6.47 | AA (**botón primario**) |
+| `--sk-on-shu` sobre `--sk-shu-hover` | 8.94 | AAA |
+| `--sk-ai` sobre `--sk-panel` | 7.12 | AAA |
+| `--sk-moegi` sobre `--sk-moegi-soft` | 5.72 | AA |
+| `--sk-kin-text` sobre `--sk-kin-soft` | 5.69 | AA |
+| `--sk-edge` sobre `--sk-panel` | 3.66 | ≥3:1 (borde con significado) |
+| `--sk-kin` filete sobre `--sk-panel` | 3.57 | ≥3:1 (sólo filete) |
+| `--sk-kin-text` foco sobre `--sk-paper` | 6.49 | ≥3:1 |
+| **oscuro** `--sk-text` sobre `--sk-paper` | 17.54 | AAA |
+| **oscuro** `--sk-on-shu` sobre `--sk-shu` | 5.18 | AA |
 
-**Regla dura**: el rojo de la paleta de marca (`#C1272D`) nunca es texto de
-error sobre fondo oscuro. Para texto de error, `--sk-aka`.
+### Reglas de croma (hard rules)
 
-### Reglas de croma
+- **Un acento saturado por pantalla**: `--sk-shu`. Nunca dos rojos, nunca
+  `--sk-shu` + `--sk-moegi` compitiendo.
+- **Oro solo como filete (1px) o sello**. `--sk-kin` no es color de texto
+  en modo claro (3.37 — falla). Usa `--sk-kin-text` sobre `--sk-kin-soft`.
+- **`--sk-on-shu` no invierte**. Si lo haces, en modo claro el botón
+  primario cae a 2.41:1.
+- **Bordes que significan** (input, foco, estado) usan `--sk-edge` (3.66).
+  `--sk-hair` (1.33) es decoración pura, nunca en controles interactivos.
+- Sin degradados salvo `--sk-foil` (filete de oro) — máximo 2 por pantalla.
+- Texto muted (`--sk-text-3`, 5.28) solo en labels grandes o ayuda;
+  nunca en cuerpo de párrafo largo.
 
-- Un borde que **significa** algo (input en foco, control deshabilitado que hay
-  que explicar) necesita ≥3:1. `1px solid var(--sk-edge)` es invisible y no
-  cuenta como borde.
-- El oro se usa en ≤5 % de la superficie. Si todo es dorado, nada es dorado.
-- Rojo + verde nunca se distinguen solo por color: siempre llevan icono o texto.
-- Sin degradados salvo en el filete de oro (`foil`), que es el único elemento
-  con brillo.
+---
+
+## 4. Tipografía
+| `--sk-moegi-bg` | `#1E2A10` | Fondo de éxito |
+| `--sk-washi` | `#F4F1EA` | Texto principal |
 
 ---
 
@@ -202,10 +266,104 @@ Escala (base 16):
 
 ---
 
-## 5. Layout y formas
+## 5. Layout — desktop-first responsive
 
-- **Rejilla**: 12 col, `gap: 16px`, `max-width: 1120px`, márgenes fluidos
-  `clamp(16px, 4vw, 48px)`. Formularios: una columna, `max-width: 440px`.
+**No es mobile-first.** Es una aplicación de escritorio, se usa en laptop y
+monitor, y el sistema se adapta **hacia arriba** con `min-width`. No existe
+layout de teléfono, ni hamburger, ni patrón de bottom-nav. Escribe las queries
+en `min-width`; una hoja de estilos con `max-width` aquí es un error de
+concepto, no de estilo.
+
+### 5.1 Rango soportado
+
+| Rango | Viewport objetivo | Qué cambia |
+| --- | --- | --- |
+| Pantalla estrecha | `< 1024px` | **Fuera de rango.** No hay layout móvil: se muestra un aviso (§5.5) |
+| Laptop | `1024–1439px` | Layout base. Grid de 12 col, contenedor `1120px` |
+| Desktop | `1440–1679px` | Contenedor `1280px`, márgenes respirados |
+| Wide | `1680–2199px` | Aparece la **tercera columna** del shell (rail de contexto) |
+| Ultrawide | `≥ 2200px` | El grid se topa en `1600px`; la columna central se limita a `72ch` |
+
+```css
+:root { --sk-shell-max: 1120px; }
+@media (min-width: 1440px) { :root { --sk-shell-max: 1280px; } }
+@media (min-width: 1680px) { :root { --sk-shell-max: 1440px; } }
+@media (min-width: 2200px) { :root { --sk-shell-max: 1600px; } }
+```
+
+Nunca `max-width` para *encoger*: en pantallas grandes el sistema **suma** una
+columna, no encoge la que ya tiene.
+
+### 5.2 Rejilla
+
+12 columnas, `gap: 16px`, margen lateral `clamp(24px, 3vw, 56px)`.
+Formularios de auth en una columna de `440px`, centrados en su panel.
+
+### 5.3 El shell autenticado
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│  TOPBAR  48px   SHINRYŪ-KAI ▸ panel     [Seal rol]  [nombre]  ⏻  │
+├────────────┬───────────────────────────────────┬─────────────────┤
+│            │                                   │                 │
+│  NAVRAIL   │   PANEL (contenido)               │  RAIL CONTEXTO  │
+│  232px     │   flexible                        │  320px          │
+│            │                                   │  ≥1680px        │
+│  Por rol   │   grid 12 col dentro              │  oculta < 1680  │
+│            │                                   │                 │
+├────────────┴───────────────────────────────────┴─────────────────┤
+│  FOOTER  banda de foil de oro, 1px                                │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+- **`NavRail`**: ancho fijo, `border-right: 1px solid var(--sk-edge-strong)`.
+  Cada item es un bloque rectangular con el kanji del módulo a la izquierda y
+  el label en `--sk-font-display`. El item activo lleva una barra de oro de
+  2 px a la izquierda — el «sello lateral». Nunca se colapsa a iconos: el
+  espacio es de sobra y colapsar sólo añade estados que nadie pidió.
+- **Rail de contexto**: `display: none` por debajo de 1680 px, `display: block`
+  a partir de ahí. Es lo único que aparece al crecer. Lleva `TokenStrip`,
+  resumen de rol y datos de la cuenta.
+- **Panel**: `min-width: 0` en el contenedor flex, o el contenido desborda.
+  En `≥ 1680px` pasa a ocupar 8 de las 12 columnas.
+
+### 5.4 Layout de auth
+
+```
+┌───────────────────────────┬──────────────────────────────────┐
+│                           │                                  │
+│   PANEL DE MARCA          │   Formulario                     │
+│   flex: 1                 │   ancho fijo 440px               │
+│                           │   centrado vertical              │
+│   診療会 vertical         │                                  │
+│   asanoha 4 %             │   Field... Field...              │
+│   filete de oro           │   [ Botón primario con cuchilla ]│
+│                           │   enlace al otro formulario      │
+└───────────────────────────┴──────────────────────────────────┘
+```
+
+El panel de marca **no se oculta** en laptop: es la mitad de la identidad del
+sistema. Si someday hay que quita algo, se quita el rail de contexto, no esto.
+
+### 5.5 Por debajo de 1024 px
+
+No hay diseño móvil y no se va a inventar uno ahora. Lo honesto es decirlo en
+la pantalla en vez de mostrar un formulario de 340 px con la tipografía de
+cartel:
+
+```css
+@media (max-width: 1023px) {
+  #root { display: grid; place-items: center; min-height: 100vh; }
+  .sk-gate { display: grid; }   /* único bloque visible */
+}
+```
+
+El aviso (`sk-gate`) es un `Panel` con el kanji, un texto de una línea
+(«Esta pantalla está pensada para escritorio») y el ancho mínimo requerido.
+Es una decisión de diseño, no un error: el sistema declara su rango.
+
+### 5.6 Formas
+
 - **Radios**: `0` en todo lo estructural, `999px` sólo en sellos circulares y
   el avatar. La rigidez rectangular es el look; los radios blandos lo matan.
 - **Tachi (cuchilla)**: `clip-path: polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%)`
@@ -285,6 +443,45 @@ Variante `.panel--sealed` con filete de oro superior y una cinta washi
 translúcida en la esquina superior izquierda — se reserva para **una** por
 pantalla: la confirmación de éxito.
 
+### 6.7 `NavRail` — navegación por rol
+
+Sólo en escritorio y sólo en `AuthedShell`. Es un componente **dirigido por
+`role`**, no por un array de items libre: quien llama pasa el rol y la lista sale
+de un mapa (§2.2). Así es imposible mostrarle «Usuarios» a un `CLIENTE`.
+
+- Ancho fijo `232px`, `border-right: 1px solid var(--sk-edge-strong)`.
+- Item: `display: grid; grid-template-columns: 28px 1fr; gap: 12px`, alto 40 px.
+  Kanji del módulo en la primera columna (`--sk-font-jp`), label en
+  `--sk-font-display` uppercase 13 px.
+- Item activo: `border-left: 2px solid var(--sk-kin)` y texto `--sk-washi`.
+  El resto, `--sk-mochi`. El estado activo **no** cambia el fondo: cambia la
+  barra y el color del texto, para no gritar.
+- Item de cierre de sesión al final, separado por un filete de oro de 1 px.
+
+### 6.8 `ContextRail`
+
+La tercera columna, `320px`, `display: none` por debajo de 1680 px. Contenido
+en este orden: `Seal` del rol + `nombre` + `email` (del `AuthResponse`),
+`TokenStrip`, y un bloque de "salir" con confirmación.
+
+Aparece **al crecer la pantalla**, no al encoger. Es el único componente cuyo
+existe/no existe depende del viewport.
+
+### 6.9 `StateBlock` — vacío, cargando, error, reintento
+
+Un solo componente para los cuatro estados no-afectivos, porque si cada
+pantalla inventa el suyo el sistema se desincroniza en dos semanas.
+
+| Variante | Contenido | Acción |
+| --- | --- | --- |
+| `empty` | kanji contextual + una línea de copy | el CTA de la pantalla |
+| `loading` | barra de progreso de tinta, sin texto de «cargando» | ninguna |
+| `error` | icono + `Alert` (§6.4) + `path`/status sólo en `console` | botón reintentar |
+| `forbidden` | `Panel` con `Seal` de acceso denegado | volver a `LoginScreen` |
+
+`forbidden` existe por §2.4: cuando se añada el filtro JWT y devuelva 403 sin
+token, el shell expulsa en vez de mostrar un error genérico.
+
 ---
 
 ## 7. Movimiento
@@ -308,10 +505,18 @@ pantalla: la confirmación de éxito.
   reemplazo.
 - Los estados de error se anuncian (`role="alert"`), no sólo se pintan.
 - Orden de tabulación = orden visual, siempre.
+- **Reflow**: como no hay diseño bajo 1024 px, WCAG 1.4.10 no aplica, pero sí
+  1.4.4 — el texto debe subir al 200 % sin perder contenido ni cortarse. El
+  layout de escritorio aguanta zooming; el `--sk-shell-max` en `px` y las
+  columnas del shell se mueven antes de que el texto se pise.
+- Sin scroll horizontal en 1024 px. Si un panel necesita scroll lateral, es que
+  `--sk-shell-max` está mal puesto.
 
 ---
 
 ## 9. Prohibido
+
+### Estilo
 
 - Texto oscuro sobre vermellón (`#14100C` en `#C1272D` = 3.24, falla).
 - `--sk-ai` oscuro (`#2E5C8A`) como texto: 2.84.
@@ -324,45 +529,110 @@ pantalla: la confirmación de éxito.
   borde, no del blur.
 - Svástika en cualquier forma.
 
+### Responsive
+
+- **Media queries en `max-width`.** El sistema es desktop-first: se escribe en
+  `min-width` y **crece** sumando la columna de contexto. Encoger es lo que
+  rompe el shell.
+- **Layout móvil**: hamburger, bottom-nav, drawer, `100vw` para el ancho de un
+  panel, `flex-wrap` en la navegación. No existen y no se añaden.
+- Colapsar el `NavRail` a iconos. Hay espacio de sobra; colapsar sólo genera
+  estados que nadie pidió.
+- Ocultar el panel de marca de `AuthLayout` para «ganar espacio». Si hay que
+  quitar algo, se quita el rail de contexto.
+- Un segundo patrón de breakpoints. Si hace falta ajustar a 1366 px, se ajusta
+  `--sk-shell-max`, no se abre una media query nueva.
+
+### Sistema
+
+- Un endpoint sin pantalla diseñada (§2.1) ni un rol sin fila en el mapa de
+  navegación (§2.2).
+- Colores, radios o sombras fuera de los tokens de §10.
+
 ---
 
-## 10. Export de tokens
+## 10. Esqueleto — archivos listos para usar
 
-Copiar en `src/assets/css/tokens.css` (la carpeta existe y está vacía) e
-importar desde `src/index.css`.
+El sistema no es solo un PDF: los archivos existen y compilan.
+
+```
+src/assets/css/
+├── tokens.css   # variables CSS (§3) — light default + [data-theme='tinta']
+└── base.css     # reset, tipografía, primitivas (.sk-*)
+src/index.css    # importa ambos arriba; mantiene estilos starter por compatibilidad
+```
+
+**`tokens.css`** — fuente de verdad del color/tipo/espacio/layout. Light default,
+`[data-theme='tinta']` opt-in. No añadas colores aquí.
+
+**`base.css`** — primitivas listas:
+| Clase | Qué hace | § ref |
+|---|---|---|
+| `.sk-shell` | `min-height:100vh`, fondo paper | 5.1 |
+| `.sk-container` | `max-width: var(--sk-shell-max)`, márgenes fluidos | 5.2 |
+| `.sk-panel` | panel blanco, borde hairline, radio 0 | 6.6 |
+| `.sk-panel--sealed` | + filete de oro arriba (1 sola por pantalla) | 6.6 |
+| `.sk-field` / `__input` / `--invalid` / `__error` | input 44px, estados | 6.2 |
+| `.sk-btn` / `--primary` / `--ghost` / `[disabled]` | 44px, clip cuchilla, loading | 6.3 |
+| `.sk-alert` / `--error` / `--ok` | traductor HTTP → español | 6.4 |
+| `.sk-token` | JWT mono, word-break, label «TOKEN (24h)» | 6.5 |
+| `.sk-seal` | sello circular 28px, kanji del rol | 6.1 |
+| `.sk-gate` | aviso «pantalla para escritorio» <1024px | 5.5 |
+| `.sk-label` / `.sk-prose` / `.sk-mono` / `.sk-jp` | utilidades de texto | 4 |
+
+**`index.css`** — importa `tokens.css` + `base.css` **antes** de cualquier regla.
+El starter de Vite sigue ahí por compatibilidad; se borrará al implementar
+`LoginScreen` / `RegisterScreen` / `AuthedShell`.
+
+### Cómo activar modo tinta (opt-in)
+
+```js
+// en el entry point (main.jsx) o donde decidas la preferencia
+document.documentElement.dataset.theme = 'tinta';
+```
+
+No uses `prefers-color-scheme`: una clínica no cambia de tema sola.
+
+---
+
+## 11. Export de tokens (referencia rápida)
+
+Los tokens canónicos están en `src/assets/css/tokens.css`. Aquí la tabla
+resumida para copiar/pegar si hace falta fuera del repo.
 
 ```css
 :root {
   /* superficies */
-  --sk-ink: #0a0a0b;
-  --sk-sumigata: #131316;
-  --sk-iro: #1c1c21;
-  --sk-edge: #2a2a31;
-  --sk-edge-strong: #6a6a75;
-
-  /* vermellón 朱 */
-  --sk-shu: #c1272d;
-  --sk-shu-hover: #a81f24;
-  --sk-shu-active: #8a1a1e;
-  --sk-on-shu: #f4f1ea;
-  --sk-aka: #ff6b5a;
-  --sk-aka-bg: #3a0e10;
-
-  /* oro 金 */
-  --sk-kin: #c9a227;
-  --sk-kin-bright: #e8cc6b;
-  --sk-kin-deep: #8a6d1f;
-  --sk-foil: linear-gradient(90deg, #8a6d1f, #e8cc6b 35%, #8a6d1f 70%, #e8cc6b);
-
-  /* apoyos */
-  --sk-ai: #7fa8d6;
-  --sk-moegi: #a8c25a;
-  --sk-moegi-bg: #1e2a10;
+  --sk-paper: #faf8f3;
+  --sk-panel: #ffffff;
+  --sk-shade: #f1eee6;
+  --sk-ink: #17150f;
 
   /* texto */
-  --sk-washi: #f4f1ea;
-  --sk-mochi: #b9b3a6;
-  --sk-kusu: #837c6e;
+  --sk-text: #17150f;
+  --sk-text-2: #4a443a;
+  --sk-text-3: #6e675a;
+  --sk-text-inv: #faf8f3;
+
+  /* bordes */
+  --sk-hair: #e4dfd2;
+  --sk-edge: #8c8578;
+
+  /* vermellón 朱 */
+  --sk-shu: #b3272e;
+  --sk-shu-hover: #8e1d23;
+  --sk-shu-soft: #f6dcda;
+  --sk-on-shu: #ffffff;        /* nunca invierte */
+
+  /* oro 金 */
+  --sk-kin: #a8821c;           /* filete/sello */
+  --sk-kin-text: #6f5714;      /* legible */
+  --sk-kin-soft: #f3e9cc;
+
+  /* apoyos */
+  --sk-ai: #245c86;
+  --sk-moegi: #4a6321;
+  --sk-moegi-soft: #e7efd5;
 
   /* tipografía */
   --sk-font-display: 'Anton', 'Arial Black', sans-serif;
@@ -370,58 +640,116 @@ importar desde `src/index.css`.
   --sk-font-mono: 'IBM Plex Mono', ui-monospace, monospace;
   --sk-font-jp: 'Shippori Mincho', 'Noto Serif JP', serif;
 
-  /* formas */
+  /* espacio */
+  --sk-s1: 4px; --sk-s2: 8px; --sk-s3: 12px; --sk-s4: 16px;
+  --sk-s6: 24px; --sk-s8: 32px; --sk-s12: 48px; --sk-s16: 64px;
+
+  /* forma */
   --sk-radius: 0;
   --sk-radius-seal: 999px;
-  --sk-blade: polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%);
-  --sk-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --sk-blade: polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%);
+  --sk-hairline: 1px solid var(--sk-hair);
+  --sk-foil: linear-gradient(90deg, #a8821c, #d9bd6a 40%, #a8821c);
 
-  --sk-focus-dark: 0 0 0 3px var(--sk-ink), 0 0 0 5px var(--sk-kin-bright);
+  /* layout */
+  --sk-shell-max: 1120px;
+  --sk-navrail-w: 232px;
+  --sk-rail-w: 320px;
+  --sk-topbar-h: 48px;
+  --sk-form-w: 440px;
+  --sk-reading: 68ch;
+
+  /* estado */
+  --sk-focus: 0 0 0 2px var(--sk-paper), 0 0 0 4px var(--sk-kin-text);
+  --sk-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --sk-dur: 160ms;
 }
 
-[data-theme='washi'] {
-  --sk-ink: #ede7da;
-  --sk-sumigata: #f7f4ed;
-  --sk-iro: #ffffff;
-  --sk-edge: #d8d0be;
-  --sk-edge-strong: #7a7263;
-  --sk-washi: #14100c;
-  --sk-mochi: #4a443a;
-  --sk-kusu: #6e675a;
-  --sk-shu: #9e1f24;
+/* breakpoints: crece hacia arriba, min-width (§5.1) */
+@media (min-width: 1440px) { :root { --sk-shell-max: 1280px; } }
+@media (min-width: 1680px) { :root { --sk-shell-max: 1440px; } }
+@media (min-width: 2200px) { :root { --sk-shell-max: 1600px; } }
+
+/* modo tinta: opt-in via [data-theme='tinta'] */
+[data-theme='tinta'] {
+  --sk-paper: #0a0a0b;
+  --sk-panel: #131316;
+  --sk-shade: #1c1c21;
+  --sk-ink: #f4f1ea;
+  --sk-text: #f4f1ea;
+  --sk-text-2: #b9b3a6;
+  --sk-text-3: #837c6e;
+  --sk-text-inv: #0a0a0b;
+  --sk-hair: #2a2a31;
+  --sk-edge: #6a6a75;
+  --sk-shu: #c1272d;
+  --sk-shu-hover: #a81f24;
+  --sk-shu-soft: #3a0e10;
   --sk-on-shu: #f4f1ea;
-  --sk-aka: #9e1f24;
-  --sk-aka-bg: #f7dedc;
-  --sk-kin-text: #6f5714;
-  --sk-moegi: #4a6321;
-  --sk-moegi-bg: #e4ecd0;
-  --sk-ai: #2a5a8a;
-  --sk-focus-dark: 0 0 0 3px var(--sk-ink), 0 0 0 5px #6f5714;
+  --sk-kin: #c9a227;
+  --sk-kin-text: #e8cc6b;
+  --sk-kin-soft: #241d0d;
+  --sk-ai: #7fa8d6;
+  --sk-moegi: #a8c25a;
+  --sk-moegi-soft: #1e2a10;
+  --sk-focus: 0 0 0 2px var(--sk-paper), 0 0 0 4px var(--sk-kin-text);
 }
 ```
 
 ---
 
-## 11. Cablearlo en este repo
+## 12. Cablearlo en este repo
 
-- `src/assets/css/tokens.css` — los tokens de arriba. La carpeta ya existe.
+- `src/assets/css/tokens.css` — **ya existe** con todos los tokens de §11.
+  Las media queries de `--sk-shell-max` van **fuera** del bloque
+  `[data-theme='tinta']`: no tienen nada que ver con el tema.
+- `src/assets/css/base.css` — **ya existe** con las primitivas `.sk-*` (§10).
+- `src/index.css` — **ya importa** `tokens.css` + `base.css` arriba.
 - `src/component/` — un componente por archivo. Ojo: la carpeta está en
   **singular** (`component`), no `components`. No hay `src/components`.
 - `src/pages/` — `Login.jsx`, `Register.jsx`, `Authenticated.jsx` (o donde
-  caiga el router cuando exista).
+  caiga el router cuando exista). Los nombres de §2.1 son los canónicos.
+- `src/layout/` — `AuthLayout.jsx` (panel de marca + formulario) y
+  `AuthedShell.jsx` (topbar + `NavRail` + panel + `ContextRail`). Es la carpeta
+  que existe para esto y está vacía.
 - `src/api/axios.js` — no lo modifiques para el sistema visual, pero es donde
   vive el `timeout: 15000` que el `Button` de carga tiene que respetar.
 - `react-refresh/only-export-components` está activo: un componente no puede
   exportar también constantes. Si `Seal` necesita su mapa de roles, va en otro
-  archivo (p. ej. `src/component/seal-roles.js`).
+  archivo (p. ej. `src/component/seal-roles.js`). El mapa de navegación por rol
+  de `NavRail` también va aparte, por el mismo motivo.
 
 ### Orden de implementación sugerido
 
-1. `tokens.css` + `index.css` — la base del gamut.
-2. `Field` + `Button` — cubren el 90 % de la pantalla de login.
-3. `Alert` con la matriz de la §6.4 — es donde el diseño se gana o se pierde.
-4. `Seal` + `TokenStrip` — la confirmación de éxito.
-5. Textura de fondo y cinta washi — último, y sólo en `panel--sealed`.
+Cada paso deja la app usable; no se avanza al siguiente con el anterior a medias.
+
+1. `tokens.css` + `base.css` + `index.css` — el gamut, primitivas y breakpoints.
+   Nada visual funciona sin esto.
+2. `Field` + `Button` + `sk-gate` — con esto ya se cumple el requisito de no
+   ser móvil y tener ancho de formulario.
+3. `LoginScreen` (**E2**) completa, con su `AuthLayout`. Es el flujo más corto
+   de todo el sistema y el que valida el 403 de verdad.
+4. `Alert` con la matriz de §6.4 + `StateBlock` — es donde el diseño se gana o
+   se pierde. Entrar aquí, no antes.
+5. `RegisterScreen` (**E1**) con validación de cliente idéntica al DTO, que es
+   lo que evita el 400 (§2.1).
+6. `Seal` + `TokenStrip` + `panel--sealed` — la confirmación de éxito.
+7. `AuthedShell` + `NavRail` + `ContextRail` — sólo cuando haya login
+   persistente; hoy la sesión se pierde al recargar (§2.4).
+8. Textura de fondo y cinta washi — último, y sólo en `panel--sealed`.
+
+### Checklist de cobertura
+
+Antes de dar el sistema por terminado, cada fila debe poder responderse con un
+sí:
+
+- [ ] ¿Existe pantalla para **E1** y **E2**? (§2.1)
+- [ ] ¿Cada pantalla tiene sus 5 estados, incluido `error` y `reintentar`? (§2.3)
+- [ ] ¿`CLIENTE`, `VETERINARIO` y `ADMIN` ven cada uno su fila del §2.2?
+- [ ] ¿Ningún copy de error menciona un status HTTP? (§6.4)
+- [ ] ¿El layout crece con `min-width` y no tiene ni un `max-width` de diseño?
+- [ ] ¿Por debajo de 1024 px se ve `sk-gate` en vez de un formulario roto?
+- [ ] ¿Todos los colores vienen de los tokens? (§9)
 
 ---
 
