@@ -1,49 +1,56 @@
 /* =============================================================================
    SHINRYU-KAI (診療会) — tokens
    Fuente de verdad unica del color, el tipo, la forma y el layout.
-   Light-first: el modo claro (washi) es el DEFAULT. Tinta es opt-in.
+   Light-first: el modo claro (washi) es el DEFAULT. Yoru es opt-in.
    No anadas colores aqui. Ni radios, ni sombras, ni ningun valor.
    Referencia y reglas: DESIGN.md
    ========================================================================== */
 
 :root {
   /* --- superficies -------------------------------------------------------- */
-  --sk-paper: #faf8f3; /* fondo de pagina — 生成, papel crudo */
+  --sk-paper: #f6f4ec; /* fondo de pagina — washi, papel crudo */
   --sk-panel: #ffffff; /* tarjetas, paneles */
-  --sk-shade: #f1eee6; /* filas alternas, zonas hunden */
-  --sk-ink: #17150f; /* superficie oscura puntual: nav, footer */
+  --sk-shade: #ece8dc; /* filas alternas, zonas hundidas */
+  --sk-ink: #2c3129; /* superficie oscura puntual: nav, footer */
 
   /* --- texto -------------------------------------------------------------- */
-  --sk-text: #17150f; /* 17.20 sobre paper */
-  --sk-text-2: #4a443a; /*  9.08 sobre paper */
-  --sk-text-3: #6e675a; /*  5.28 sobre paper */
-  --sk-text-inv: #faf8f3; /* texto sobre --sk-ink */
+  --sk-text: #2c3129; /* 12.08 sobre paper */
+  --sk-text-2: #565c51; /*  6.26 sobre paper */
+  --sk-text-3: #6c7266; /*  4.50 sobre paper */
+  --sk-text-inv: #f6f4ec; /* texto sobre --sk-ink */
 
   /* --- bordes ------------------------------------------------------------- */
-  --sk-hair: #e4dfd2; /* decorativo (1.33). NO marca controles */
-  --sk-edge: #8c8578; /* con significado (3.66 sobre panel) */
+  --sk-hair: #e2ded0; /* decorativo. NO marca controles */
+  --sk-edge: #7e8474; /* con significado (3.86 sobre panel) */
 
-  /* --- 朱 vermellón: lo unico que se permite ser saturated ----------------- */
-  --sk-shu: #b3272e; /* acciones, error */
-  --sk-shu-hover: #8e1d23; /*  8.94 sobre panel */
-  --sk-shu-soft: #f6dcda; /* fondo de alerta/aviso */
-  --sk-on-shu: #ffffff; /* texto sobre vermellon (6.47) — NUNCA invierte */
+  /* --- 抹茶 matcha: el acento sereno, accion y exito ---------------------- */
+  --sk-matcha: #47694e; /* acciones primarias, exito (5.61 sobre paper) */
+  --sk-matcha-hover: #3a5740; /*  8.02 sobre panel */
+  --sk-matcha-soft: #e3ede2; /* fondo de exito / aviso suave */
+  --sk-on-matcha: #ffffff; /* texto sobre matcha (6.18) — NUNCA invierte */
 
-  /* --- 金 oro: filete y sello. Casi nunca texto. ------------------------- */
-  --sk-kin: #a8821c; /* filete 1px (3.57 sobre panel) */
-  --sk-kin-text: #6f5714; /* oro legible como texto (5.69 sobre kin-soft) */
-  --sk-kin-soft: #f3e9cc; /* fondo de sello/destacado */
+  /* --- 紅 beni: rojo suave de error --------------------------------------- */
+  --sk-beni: #9e4a47; /* error, peligro (5.41 sobre paper) */
+  --sk-beni-hover: #833d3a; /*  7.10 sobre panel */
+  --sk-beni-soft: #f6e3e1; /* fondo de alerta/error */
+  --sk-on-beni: #ffffff; /* texto sobre beni (5.96) */
+
+  /* --- 生成 kinari: dorado calido de hilo y sello ------------------------- */
+  --sk-kinari: #a98a46; /* hilo 1px / sello (3.28 sobre panel) */
+  --sk-kinari-text: #6e5828; /* legible como texto (5.67 sobre kinari-soft) */
+  --sk-kinari-soft: #f2ead6; /* fondo de sello / destacado */
 
   /* --- apoyos ------------------------------------------------------------- */
-  --sk-ai: #245c86; /* enlaces, informativo (7.12) */
-  --sk-moegi: #4a6321; /* exito / animal sano (5.72 sobre moegi-soft) */
-  --sk-moegi-soft: #e7efd5;
+  --sk-ai: #3c5c78; /* enlaces, informativo (7.01 sobre panel) */
+  --sk-ai-soft: #e4ecf3;
+  --sk-sakura: #c97f8c; /* acento decorativo, jamas texto de accion */
+  --sk-sakura-soft: #f7e7e9;
 
   /* --- tipografia --------------------------------------------------------- */
-  --sk-font-display: 'Anton', 'Arial Black', 'Helvetica Neue', sans-serif;
-  --sk-font-body: 'Inter', system-ui, -apple-system, sans-serif;
+  --sk-font-display: 'Zen Maru Gothic', 'Hiragino Maru Gothic ProN', system-ui, sans-serif;
+  --sk-font-body: 'Zen Kaku Gothic New', 'Hiragino Kaku Gothic ProN', system-ui, sans-serif;
   --sk-font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', monospace;
-  --sk-font-jp: 'Shippori Mincho', 'Noto Serif JP', serif;
+  --sk-font-jp: 'Shippori Mincho', 'Noto Serif JP', 'Yu Mincho', serif;
 
   /* --- espacio (escala 4) ------------------------------------------------- */
   --sk-s1: 4px;
@@ -56,24 +63,30 @@
   --sk-s16: 64px;
 
   /* --- forma -------------------------------------------------------------- */
-  --sk-radius: 0;
-  --sk-radius-seal: 999px;
-  --sk-blade: polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%);
+  --sk-radius: 12px; /* paneles y tarjetas */
+  --sk-radius-sm: 8px; /* inputs, botones, chips */
+  --sk-radius-seal: 999px; /* sellos redondos y avatar */
   --sk-hairline: 1px solid var(--sk-hair);
-  --sk-foil: linear-gradient(90deg, #a8821c, #d9bd6a 40%, #a8821c);
+  --sk-foil: linear-gradient(
+    90deg,
+    #b9963f,
+    #e6d29a 45%,
+    #b9963f
+  ); /* hilo calido, 1 sola vez por pantalla */
+  --sk-shadow-overlay: 0 12px 40px rgba(44, 49, 41, 0.12);
 
   /* --- layout desktop-first (§5.1) ---------------------------------------- */
   --sk-shell-max: 1120px;
   --sk-navrail-w: 232px;
   --sk-rail-w: 320px;
-  --sk-topbar-h: 48px;
+  --sk-topbar-h: 56px;
   --sk-form-w: 440px;
   --sk-reading: 68ch; /* ancho de columna de texto corrido */
 
   /* --- estado / foco / movimiento ----------------------------------------- */
-  --sk-focus: 0 0 0 2px var(--sk-paper), 0 0 0 4px var(--sk-kin-text);
-  --sk-ease: cubic-bezier(0.16, 1, 0.3, 1);
-  --sk-dur: 160ms;
+  --sk-focus: 0 0 0 2px var(--sk-paper), 0 0 0 4px var(--sk-matcha);
+  --sk-ease: cubic-bezier(0.25, 0.8, 0.25, 1);
+  --sk-dur: 180ms;
 }
 
 /* El shell crece hacia arriba. Nunca max-width para diseno. */
@@ -93,35 +106,42 @@
   }
 }
 
-/* Modo tinta: opt-in, nunca por preferencia del sistema. Una clinica se usa
-   con luz de dia; el tema oscuro es una preferencia de quien mira, no un
+/* Modo yoru (夜): opt-in, nunca por preferencia del sistema. Una clinica se
+   usa con luz de dia; el tema oscuro es una preferencia de quien mira, no un
    default que se imponga. */
-[data-theme='tinta'] {
-  --sk-paper: #0a0a0b;
-  --sk-panel: #131316;
-  --sk-shade: #1c1c21;
-  --sk-ink: #f4f1ea;
+[data-theme='yoru'] {
+  --sk-paper: #12140f;
+  --sk-panel: #1b1e17;
+  --sk-shade: #24281e;
+  --sk-ink: #edeae0;
 
-  --sk-text: #f4f1ea; /* 17.54 sobre paper */
-  --sk-text-2: #b9b3a6; /*  8.88 sobre panel */
-  --sk-text-3: #837c6e; /*  4.78 sobre panel */
-  --sk-text-inv: #0a0a0b;
+  --sk-text: #edeae0; /* 15.40 sobre paper */
+  --sk-text-2: #b7bcaf; /*  9.56 sobre paper */
+  --sk-text-3: #8c9285; /*  5.80 sobre paper */
+  --sk-text-inv: #12140f;
 
-  --sk-hair: #2a2a31;
-  --sk-edge: #6a6a75;
+  --sk-hair: #2c3026;
+  --sk-edge: #6a7061;
 
-  --sk-shu: #c1272d;
-  --sk-shu-hover: #a81f24;
-  --sk-shu-soft: #3a0e10;
-  --sk-on-shu: #f4f1ea; /* 5.18 — por eso el token no invierte */
+  --sk-matcha: #9cc4a3; /*  9.57 sobre paper */
+  --sk-matcha-hover: #b0d2b6;
+  --sk-matcha-soft: #1e2a1e;
+  --sk-on-matcha: #12140f; /* 9.57 — por eso el token invierte en yoru */
 
-  --sk-kin: #c9a227;
-  --sk-kin-text: #e8cc6b; /* 12.52 sobre paper */
-  --sk-kin-soft: #241d0d;
+  --sk-beni: #e2a09c;
+  --sk-beni-hover: #edb4b0;
+  --sk-beni-soft: #33191a;
+  --sk-on-beni: #12140f;
 
-  --sk-ai: #7fa8d6; /* 7.99 */
-  --sk-moegi: #a8c25a;
-  --sk-moegi-soft: #1e2a10;
+  --sk-kinari: #c9a968;
+  --sk-kinari-text: #e8cf8f; /* legible sobre kinari-soft */
+  --sk-kinari-soft: #2a2416;
 
-  --sk-focus: 0 0 0 2px var(--sk-paper), 0 0 0 4px var(--sk-kin-text);
+  --sk-ai: #9dbdd8;
+  --sk-ai-soft: #182431;
+  --sk-sakura: #e2a9b2;
+  --sk-sakura-soft: #2e1d20;
+
+  --sk-shadow-overlay: 0 12px 40px rgba(0, 0, 0, 0.55);
+  --sk-focus: 0 0 0 2px var(--sk-paper), 0 0 0 4px var(--sk-matcha);
 }

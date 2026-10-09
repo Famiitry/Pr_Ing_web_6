@@ -72,12 +72,12 @@ Sin Docker:
   `AuthenticationEntryPoint` configurado, así que `BadCredentialsException`
   cae en el entry point por defecto de Spring. El frontend no debe
   distinguir 401/403 en el login.
-- El frontend sigue siendo el starter de Vite: `src/App.jsx` es la plantilla
-  original. Las carpetas `src/pages`, `src/routes`, `src/store`,
-  `src/layout`, `src/component` (ojo: en singular) y `src/assets/{css,logos}`
-  están **vacías**; son el andamiaje previsto, no código existente.
-- No hay router ni estado global instalados todavía (`react-router` y cualquier
-  store no están en `package.json`).
+- El frontend dejó de ser el starter de Vite: `App.jsx` define las rutas
+  (login/registro + shell autenticado + módulos por rol + 404) sobre
+  `react-router-dom`, con sesión en memoria (`src/store`). Cada canal de módulo
+  (`src/pages/ModulePlaceholder.jsx`) es un placeholder hasta conectarse a la
+  API; las carpetas `src/assets/{css,logos}` tienen tokens/estilos y el resto
+  (`src/routes`, `src/layout`, `src/component`) ya está en uso.
 
 ## Git
 

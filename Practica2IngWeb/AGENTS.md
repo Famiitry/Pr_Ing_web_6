@@ -42,8 +42,13 @@ Dentro de Docker los comandos son los mismos, pero el contenedor ya corre
 
 ## Wiring / entrypoints
 
-- `index.html` → `/src/main.jsx` → `src/App.jsx`. Sin router y sin estado
-  global instalados; añádelos explícitamente si una función los necesita.
+- `index.html` → `/src/main.jsx` → `src/App.jsx`. Router ya instalado
+  (`react-router-dom`, `BrowserRouter` en main.jsx) y estado global mínimo:
+  `src/store/SessionProvider.jsx` mantiene la sesión en memoria (contexto en
+  `src/store/session.js`). Las rutas públicas (login/register), el shell
+  autenticado (`src/layout/AuthedShell.jsx`) y las rutas de módulos por rol
+  viven en `App.jsx`; los canales de cada módulo son placeholders hasta que se
+  conecten.
 - `src/api/axios.js` es la única capa HTTP. Importa el default export `api` en
   vez de crear instancias de axios sueltas.
 - `vite.config.js` además de React define el dev server: `host: true` (necesario

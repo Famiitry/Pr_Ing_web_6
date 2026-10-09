@@ -1,7 +1,8 @@
 /* =============================================================================
    SHINRYU-KAI (診療会) — esqueleto base
    Reset, tipografia y las primitivas minimas. Todo lo que ya funciona y que
-   solo hay que componer. Las piezas especificadas en DESIGN.md §6 que aun no
+   solo hay que componer. Estilo japones sereno: formas suaves, mucho aire y
+   una sola voz de color. Las piezas especificadas en DESIGN.md §6 que aun no
    existen se marcan con "TODO §6.x" para que se COMPLETEN, no se inventen.
    ========================================================================== */
 
@@ -24,7 +25,7 @@ body {
   color: var(--sk-text);
   font-family: var(--sk-font-body);
   font-size: 16px;
-  line-height: 1.5;
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
@@ -49,15 +50,14 @@ h1,
 h2,
 h3 {
   font-family: var(--sk-font-display);
-  font-weight: 400;
-  text-transform: uppercase;
-  letter-spacing: -0.02em;
-  line-height: 1;
+  font-weight: 500;
+  letter-spacing: 0.005em;
+  line-height: 1.2;
   color: var(--sk-text);
 }
 
 h1 {
-  font-size: clamp(2rem, 3.4vw, 2.75rem);
+  font-size: clamp(1.75rem, 3vw, 2.5rem);
 }
 h2 {
   font-size: 1.5rem;
@@ -74,7 +74,7 @@ h3 {
   font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   color: var(--sk-text-3);
 }
 
@@ -89,7 +89,7 @@ h3 {
 /* Texto corrido: ancho de lectura, no de pantalla. */
 .sk-prose {
   max-width: var(--sk-reading);
-  line-height: 1.65;
+  line-height: 1.75;
   color: var(--sk-text-2);
 }
 
@@ -98,6 +98,7 @@ h3 {
 :focus-visible {
   outline: none;
   box-shadow: var(--sk-focus);
+  border-radius: var(--sk-radius-sm);
 }
 
 /* --- layout --------------------------------------------------------------- */
@@ -159,7 +160,9 @@ h3 {
   padding-inline: var(--sk-s3);
   background: var(--sk-panel);
   border: 1px solid var(--sk-edge);
-  border-radius: var(--sk-radius);
+  border-radius: var(--sk-radius-sm);
+  transition: border-color var(--sk-dur) var(--sk-ease),
+    box-shadow var(--sk-dur) var(--sk-ease);
 }
 
 .sk-field__input::placeholder {
@@ -167,7 +170,7 @@ h3 {
 }
 
 .sk-field--invalid .sk-field__input {
-  border-color: var(--sk-shu);
+  border-color: var(--sk-beni);
 }
 
 .sk-field__error {
@@ -175,7 +178,7 @@ h3 {
   align-items: center;
   gap: var(--sk-s2);
   font-size: 0.875rem;
-  color: var(--sk-shu-hover);
+  color: var(--sk-beni-hover);
 }
 
 /* --- Button --------------------------------------------------------------- */
@@ -187,22 +190,22 @@ h3 {
   gap: var(--sk-s2);
   height: 44px;
   padding-inline: var(--sk-s6);
-  border-radius: var(--sk-radius);
+  border-radius: var(--sk-radius-sm);
   cursor: pointer;
   transition: background var(--sk-dur) var(--sk-ease),
-    color var(--sk-dur) var(--sk-ease);
+    color var(--sk-dur) var(--sk-ease),
+    border-color var(--sk-dur) var(--sk-ease);
 }
 
 .sk-btn--primary {
-  background: var(--sk-shu);
-  color: var(--sk-on-shu);
-  border: 1px solid var(--sk-shu);
-  clip-path: var(--sk-blade);
+  background: var(--sk-matcha);
+  color: var(--sk-on-matcha);
+  border: 1px solid var(--sk-matcha);
 }
 
 .sk-btn--primary:hover {
-  background: var(--sk-shu-hover);
-  border-color: var(--sk-shu-hover);
+  background: var(--sk-matcha-hover);
+  border-color: var(--sk-matcha-hover);
 }
 
 .sk-btn--ghost {
@@ -211,15 +214,13 @@ h3 {
   border: 1px solid var(--sk-edge);
 }
 
+.sk-btn--ghost:hover {
+  background: var(--sk-shade);
+}
+
 .sk-btn[disabled] {
   cursor: not-allowed;
   opacity: 0.55;
-}
-
-/* La unica prolongacion de 12px es la cuchilla: no la uses en ningun otro
-   lado del layout. */
-.sk-btn--primary:disabled {
-  clip-path: none;
 }
 
 /* --- Alert (TODO §6.4: falta la matriz status -> copy) -------------------- */
@@ -230,23 +231,24 @@ h3 {
   gap: var(--sk-s3);
   padding: var(--sk-s4);
   background: var(--sk-shade);
-  border-left: 2px solid var(--sk-edge);
+  border-left: 3px solid var(--sk-edge);
+  border-radius: var(--sk-radius-sm);
 }
 
 .sk-alert--error {
-  background: var(--sk-shu-soft);
-  border-left-color: var(--sk-shu);
+  background: var(--sk-beni-soft);
+  border-left-color: var(--sk-beni);
 }
 
 .sk-alert--ok {
-  background: var(--sk-moegi-soft);
-  border-left-color: var(--sk-moegi);
+  background: var(--sk-matcha-soft);
+  border-left-color: var(--sk-matcha);
 }
 
 .sk-alert__title {
   font-family: var(--sk-font-display);
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
+  font-weight: 500;
+  letter-spacing: 0.01em;
 }
 
 .sk-alert__body {
@@ -262,7 +264,8 @@ h3 {
   gap: var(--sk-s2);
   padding: var(--sk-s3);
   background: var(--sk-shade);
-  border-left: 2px solid var(--sk-kin);
+  border-left: 3px solid var(--sk-kinari);
+  border-radius: var(--sk-radius-sm);
   font-family: var(--sk-font-mono);
   font-size: 0.75rem;
   word-break: break-all;
@@ -279,8 +282,8 @@ h3 {
   border-radius: var(--sk-radius-seal);
   font-family: var(--sk-font-jp);
   font-size: 0.875rem;
-  background: var(--sk-kin-soft);
-  color: var(--sk-kin-text);
+  background: var(--sk-kinari-soft);
+  color: var(--sk-kinari-text);
 }
 
 /* --- gate de escritorio (TODO §5.5) --------------------------------------- */
